@@ -1,0 +1,9 @@
+# Todo App Phase 2 Requirements
+# Python 3.6+ required
+# No external dependencies - uses Python standard library only
+
+# This file is intentionally minimal to maintain constitutional compliance:
+# - CLI only
+# - In-memory storage only
+# - Python standard library only
+# - No databases, files, or frameworks
