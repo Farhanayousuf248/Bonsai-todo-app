@@ -12,6 +12,15 @@ This project follows strict **Spec-Driven Development (SDD)** methodology with c
 
 ---
 
+## 🚀 Project Evolution
+
+This project evolved through three distinct phases of development:
+- **Phase 1**: Established the foundation with core CLI operations (Add, View, Complete, Delete).
+- **Phase 2**: Introduced expanded functionality including file storage, task priorities, categories, and filtering logic.
+- **Phase 3**: Finalized the application with advanced features like subtasks, recurring logic, dependencies, and a comprehensive automated testing suite.
+
+---
+
 ## ✨ Features
 
 ### Phase 1 Features (Complete)
