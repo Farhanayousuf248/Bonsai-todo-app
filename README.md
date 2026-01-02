@@ -59,8 +59,9 @@ This project evolved through three distinct phases of development:
 
 ```
 TodoApp/
-├── .claude/                   # AI agent & skill metadata
-│   ├── agents/
+├── .claude/                   # AI configuration & automation
+│   ├── agents/                # Custom AI agents
+│   ├── commands/              # Automation and test scripts (demo, tests)
 │   └── skills/
 ├── src/                        # Source code (modular)
 │   ├── __init__.py
@@ -97,7 +98,7 @@ TodoApp/
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/your-username/TodoApp.git
+    git clone https://github.com/Farhanayousuf248/Bonsai-todo-app.git
     cd TodoApp
     ```
 
@@ -211,7 +212,7 @@ This project follows strict architectural constraints:
 ### Automated Testing
 Run the comprehensive test suite to verify all 27 features:
 ```bash
-python test_all_features.py
+python .claude/commands/test_all_features.py
 ```
 
 ---
