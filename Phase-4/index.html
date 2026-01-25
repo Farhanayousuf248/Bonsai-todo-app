@@ -1,0 +1,837 @@
+"Great! Now please start the FastAPI server using uvicorn so I can open the Phase-4 dashboard.<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App - Phase 4</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .card-header h2 {
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #taskInput {
+            padding: 12px 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            flex: 1;
+            min-width: 200px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #taskInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            padding: 15px 25px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .task-list {
+            padding: 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 18px 25px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+
+        .task-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            margin-right: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .task-checkbox:hover {
+            border-color: #667eea;
+        }
+
+        .task-checkbox.checked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .task-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-text {
+            font-size: 1.05rem;
+            color: #333;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .task-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .priority-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .priority-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .priority-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .category-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .task-item:hover .task-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .action-btn.edit {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .action-btn.edit:hover {
+            background: #1976d2;
+            color: white;
+        }
+
+        .action-btn.delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .action-btn.delete:hover {
+            background: #c62828;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transform: translateX(120%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .connection-status.connected {
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .status-dot.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .card-header {
+                padding: 15px;
+            }
+
+            .task-item {
+                padding: 15px;
+            }
+
+            .task-actions {
+                opacity: 1;
+            }
+
+            .toast {
+                left: 20px;
+                right: 20px;
+                bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status disconnected" id="connectionStatus">
+        <span class="status-dot"></span>
+        <span id="statusText">Connecting...</span>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Todo App</h1>
+            <p>Phase 4 - Interactive Web Interface with Live API</p>
+        </header>
+
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingTasks">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completionRate">0%</div>
+                <div class="stat-label">Completion Rate</div>
+            </div>
+        </div>
+
+        <div class="main-card">
+            <div class="card-header">
+                <h2>Tasks</h2>
+                <div class="input-group">
+                    <input type="text" id="searchInput" placeholder="Search tasks..." autocomplete="off" oninput="searchTasks(this.value)" style="margin-right: 15px; border-radius: 20px; padding: 10px 20px; flex: 0.5;">
+                    <input type="text" id="taskInput" placeholder="Enter a new task..." autocomplete="off">
+                    <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+                </div>
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+                <button class="filter-btn" data-filter="pending" onclick="setFilter('pending')">Pending</button>
+                <button class="filter-btn" data-filter="completed" onclick="setFilter('completed')">Completed</button>
+                <button class="filter-btn" data-filter="high" onclick="setFilter('high')">High Priority</button>
+                <button class="filter-btn" onclick="undoLastAction()">↶ Undo</button>
+                <button class="btn btn-secondary btn-sm" onclick="loadTasks()" style="margin-left: auto; padding: 8px 16px;">↻ Refresh</button>
+            </div>
+
+            <div class="task-list" id="taskList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_BASE = '/api/v1';
+        let currentFilter = 'all';
+        let tasks = [];
+
+        // Check connection status
+        async function checkConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+
+            try {
+                // Use absolute path or ensure it hits the correct port if it's not the same as serving port
+                // Since this file is served by FastAPI on :8080, '/health' should work.
+                // However, let's try to be more robust.
+                const response = await fetch('/health');
+                if (response.ok) {
+                    statusEl.className = 'connection-status connected';
+                    statusText.textContent = 'Connected';
+                    return true;
+                }
+            } catch (e) {
+                console.log('Connection check failed:', e.message);
+            }
+
+            statusEl.className = 'connection-status disconnected';
+            statusText.textContent = 'Disconnected';
+            return false;
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Load all tasks
+        async function loadTasks() {
+            const taskList = document.getElementById('taskList');
+            const searchInput = document.getElementById('searchInput');
+
+            // Skip current check to allow reload on refresh button click
+            // (We handle the input-based search in searchTasks)
+
+            taskList.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks`);
+                if (!response.ok) throw new Error('Failed to load tasks');
+
+                tasks = await response.json();
+                renderTasks();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">⚠️</div>
+                        <h3>Unable to load tasks</h3>
+                        <p>Make sure the API server is running</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render tasks based on current filter
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            let filteredTasks = [...tasks];
+
+            if (currentFilter === 'pending') {
+                filteredTasks = tasks.filter(t => !t.completed && !t.archived);
+            } else if (currentFilter === 'completed') {
+                filteredTasks = tasks.filter(t => t.completed && !t.archived);
+            } else if (currentFilter === 'high') {
+                filteredTasks = tasks.filter(t => t.priority === 'high' && !t.archived);
+            } else {
+                filteredTasks = tasks.filter(t => !t.archived);
+            }
+
+            if (filteredTasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <h3>No tasks found</h3>
+                        <p>Add your first task above to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            taskList.innerHTML = filteredTasks.map(task => `
+                <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                    <div class="task-content">
+                        <div class="task-text">${escapeHtml(task.description)}</div>
+                        <div class="task-meta">
+                            <span class="priority-badge priority-${task.priority}">${task.priority}</span>
+                            <span class="category-badge">${task.category}</span>
+                            <span>${formatDate(task.created_at)}</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn delete" onclick="deleteTask(${task.id})" title="Delete">🗑</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update statistics
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                if (!response.ok) throw new Error('Failed to load stats');
+
+                const stats = await response.json();
+                document.getElementById('totalTasks').textContent = stats.active;
+                document.getElementById('pendingTasks').textContent = stats.pending;
+                document.getElementById('completedTasks').textContent = stats.completed;
+                document.getElementById('completionRate').textContent = `${stats.completion_rate}%`;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Add a new task
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            const searchInput = document.getElementById('searchInput');
+            const description = input.value.trim();
+
+            if (!description) {
+                showToast('Please enter a task description', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to add task');
+                }
+
+                input.value = '';
+                searchInput.value = ''; // Clear search when adding new task
+                showToast('Task added successfully!');
+                await loadTasks();
+            } catch (error) {
+                console.error('Error adding task:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function searchTasks(keyword) {
+            if (!keyword.trim()) {
+                await loadTasks();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks/search/${encodeURIComponent(keyword)}`);
+                if (!response.ok) throw new Error('Search failed');
+
+                tasks = await response.json();
+                renderTasks();
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+
+        // Toggle task completion
+        async function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            try {
+                if (task.completed) {
+                    const response = await fetch(`${API_BASE}/tasks/${taskId}/uncomplete`, {
+                        method: 'POST'
+                    });
+                    if (!response.ok) throw new Error('Failed to uncomplete task');
+                } else {
+                    const response = await fetch(`${API_BASE}/tasks/${taskId}/complete`, {
+                        method: 'POST'
+                    });
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to complete task');
+                    }
+                }
+
+                await loadTasks();
+                showToast(task.completed ? 'Task marked as pending' : 'Task completed!');
+            } catch (error) {
+                console.error('Error toggling task:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        // Delete a task
+        async function deleteTask(taskId) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Failed to delete task');
+
+                showToast('Task deleted');
+                await loadTasks();
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        // Undo last action
+        async function undoLastAction() {
+            try {
+                const response = await fetch(`${API_BASE}/undo`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Nothing to undo');
+                }
+
+                const result = await response.json();
+                showToast(result.message);
+                await loadTasks();
+            } catch (error) {
+                console.error('Error undoing:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        // Set filter
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            renderTasks();
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Event listeners
+        document.getElementById('taskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        // Initialize
+        async function init() {
+            await checkConnection();
+            await loadTasks();
+
+            // Check connection every 5 seconds
+            setInterval(checkConnection, 5000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

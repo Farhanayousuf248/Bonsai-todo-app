@@ -1,0 +1,9 @@
+# Todo App Phase 4 Requirements
+# Python 3.11+ required
+
+# FastAPI and dependencies
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+
+# No other external dependencies - uses Phase-3 in-memory storage

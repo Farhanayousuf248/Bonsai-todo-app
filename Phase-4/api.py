@@ -1,11 +1,11 @@
 """
-FastAPI Backend for Todo App Phase 5
-REST API with AI Smart-Input feature for automatic priority/category detection.
+FastAPI Backend for Todo App Phase 4
+REST API for live task data management.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -16,29 +16,23 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Phase-3'))
 
 from src import storage
-from ai_analyzer import analyze_task_text, extract_clean_description
-import random
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Todo App API - Phase 5",
-    description="REST API for Todo App Phase 5 - AI Smart-Input Feature",
-    version="5.0.0"
+    title="Todo App API",
+    description="REST API for Todo App Phase 4 - Live task data management",
+    version="4.0.0"
 )
 
 # Configure CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, replace with specific origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-@app.get("/", response_class=HTMLResponse)
-async def read_index():
-    return FileResponse(path="index.html", media_type="text/html")
 
 # ============================================================================
 # Pydantic Models
@@ -46,8 +40,8 @@ async def read_index():
 
 class TaskCreate(BaseModel):
     description: str
-    priority: Optional[str] = None  # AI will auto-detect if not provided
-    category: Optional[str] = None  # AI will auto-detect if not provided
+    priority: str = "medium"
+    category: str = "other"
 
 
 class TaskUpdate(BaseModel):
@@ -72,16 +66,6 @@ class TaskResponse(BaseModel):
     completed_at: Optional[str] = None
 
 
-class AIAnalysisResponse(BaseModel):
-    original_description: str
-    cleaned_description: str
-    detected_priority: str
-    detected_category: str
-    priority_confidence: float
-    category_confidence: float
-    use_ai_suggestions: bool
-
-
 class HealthResponse(BaseModel):
     status: str
     version: str
@@ -94,127 +78,19 @@ class HealthResponse(BaseModel):
 
 @app.get("/")
 async def root():
-    """Serve the Phase 5 web interface."""
+    """Serve the Phase 4 web interface."""
     return FileResponse(os.path.join(os.path.dirname(__file__), "index.html"))
 
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint."""
+    """Health check endpoint for Kubernetes probes."""
     return {
         "status": "healthy",
-        "version": "5.0.0",
+        "version": "4.0.0",
         "timestamp": datetime.now().isoformat()
     }
 
-
-# ============================================================================
-# AI Smart-Input Endpoints
-# ============================================================================
-
-@app.post("/api/v1/tasks/analyze", response_model=AIAnalysisResponse)
-async def analyze_task(description: str):
-    """
-    Analyze task description using AI Smart-Input.
-
-    Detects priority level and category from the task text.
-    Returns cleaned description and detected attributes with confidence scores.
-    """
-    if not description or not description.strip():
-        raise HTTPException(status_code=400, detail="Task description cannot be empty")
-
-    # Analyze the task text
-    analysis = analyze_task_text(description)
-
-    # Get confidence scores
-    confidence = analysis.copy()
-    del confidence["priority"]
-    del confidence["category"]
-    full_confidence = get_confidence_scores(description, analysis)
-
-    # Extract clean description
-    cleaned = extract_clean_description(description)
-
-    return {
-        "original_description": description,
-        "cleaned_description": cleaned,
-        "detected_priority": analysis["priority"],
-        "detected_category": analysis["category"],
-        "priority_confidence": full_confidence["priority"],
-        "category_confidence": full_confidence["category"],
-        "use_ai_suggestions": True
-    }
-
-
-@app.post("/api/v1/tasks", response_model=TaskResponse, status_code=201)
-async def create_task(task: TaskCreate):
-    """
-    Create a new task with AI Smart-Input support.
-
-    If priority or category is not provided, AI will auto-detect them.
-    """
-    if not task.description.strip():
-        raise HTTPException(status_code=400, detail="Task description cannot be empty")
-
-    # Use AI to detect priority/category if not provided
-    priority = task.priority
-    category = task.category
-
-    # Clean the description (remove priority indicators)
-    cleaned_description = extract_clean_description(task.description)
-
-    # Auto-detect if not provided
-    if priority is None or category is None:
-        analysis = analyze_task_text(task.description)
-        if priority is None:
-            priority = analysis["priority"]
-        if category is None:
-            category = analysis["category"]
-
-    # Use cleaned description for storage
-    success = storage.add_task(cleaned_description, priority, category)
-    if not success:
-        raise HTTPException(status_code=400, detail="Failed to create task")
-
-    # Return the newly created task
-    all_tasks = storage.get_all_tasks()
-    return all_tasks[-1]
-
-class ChatRequest(BaseModel):
-    message: str
-
-class ChatResponse(BaseModel):
-    reply: str
-    task_added: Optional[TaskResponse] = None
-
-@app.post('/api/v1/chat', response_model=ChatResponse)
-async def chat(request: ChatRequest):
-    msg_lower = request.message.lower()
-
-    # Simple intent: task add
-    if any(word in msg_lower for word in ['add', 'create', 'todo', 'task', 'do', 'fix', 'buy']):
-        # Extract desc (whole msg after keywords)
-        desc = request.message.strip()
-        analysis = analyze_task_text(desc)
-        prio, cat = analysis['priority'], analysis['category']
-        cleaned = extract_clean_description(desc)
-
-        success = storage.add_task(cleaned, prio, cat)
-        if success:
-            new_task = storage.get_all_tasks()[-1]
-            reply = f"I've added '{new_task['description']}' for you! ({new_task['priority']} priority, {new_task['category']} category)."
-            return {'reply': reply, 'task_added': new_task}
-        else:
-            return {'reply': "Sorry, couldn't add that task."}
-
-    # Generic replies
-    replies = ['Got it!', 'Sure thing!', "I'll keep that in mind.", 'Okay!']
-    return {'reply': random.choice(replies)}
-
-
-# ============================================================================
-# Standard Task Endpoints (same as Phase 4)
-# ============================================================================
 
 @app.get("/api/v1/tasks", response_model=List[TaskResponse])
 async def get_all_tasks():
@@ -253,6 +129,21 @@ async def get_task(task_id: int):
     return task
 
 
+@app.post("/api/v1/tasks", response_model=TaskResponse, status_code=201)
+async def create_task(task: TaskCreate):
+    """Create a new task."""
+    if not task.description.strip():
+        raise HTTPException(status_code=400, detail="Task description cannot be empty")
+
+    success = storage.add_task(task.description, task.priority, task.category)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to create task")
+
+    # Return the newly created task
+    all_tasks = storage.get_all_tasks()
+    return all_tasks[-1]
+
+
 @app.put("/api/v1/tasks/{task_id}", response_model=TaskResponse)
 async def update_task(task_id: int, task_update: TaskUpdate):
     """Update a task."""
@@ -285,6 +176,7 @@ async def complete_task(task_id: int):
 
     success = storage.mark_task_complete(task_id)
     if not success:
+        # Check if there are incomplete dependencies
         all_complete, incomplete = storage.check_dependencies_complete(task_id)
         if not all_complete:
             dep_names = [t["description"] for t in incomplete[:3]]
@@ -306,6 +198,7 @@ async def uncomplete_task(task_id: int):
 
     success = storage.undo_last_action()
     if not success[0]:
+        # Fallback if undo isn't possible (e.g. not the last action)
         task["completed"] = False
         task["completed_at"] = None
         storage.save_data()
@@ -376,10 +269,12 @@ async def get_statistics():
     completed_tasks = [t for t in active_tasks if t["completed"]]
     pending_tasks = [t for t in active_tasks if not t["completed"]]
 
+    # Priority breakdown for pending
     priority_breakdown = {}
     for p in ["high", "medium", "low"]:
         priority_breakdown[p] = len([t for t in pending_tasks if t["priority"] == p])
 
+    # Category breakdown
     category_breakdown = {}
     for task in active_tasks:
         cat = task["category"]
@@ -415,48 +310,6 @@ async def get_undo_status():
     """Get undo status (whether there's an action to undo)."""
     last_action = storage.get_last_action()
     return {"has_action": last_action is not None, "action": last_action}
-
-
-# ============================================================================
-# AI Helper Functions
-# ============================================================================
-
-def get_confidence_scores(description: str, analysis: dict) -> dict:
-    """Calculate confidence scores for detected attributes."""
-    from ai_analyzer import PRIORITY_KEYWORDS, PRIORITY_PATTERNS, CATEGORY_KEYWORDS
-    import re
-
-    text_lower = description.lower()
-    priority = analysis["priority"]
-    category = analysis["category"]
-
-    # Priority confidence
-    priority_confidence = 0.5
-    if priority != "medium":
-        matches = 0
-        if priority in PRIORITY_KEYWORDS:
-            for keyword in PRIORITY_KEYWORDS[priority]:
-                if keyword in text_lower:
-                    matches += 1
-        if priority in PRIORITY_PATTERNS:
-            for pattern in PRIORITY_PATTERNS[priority]:
-                if re.search(pattern, text_lower, re.IGNORECASE):
-                    matches += 2
-        priority_confidence = min(0.9, 0.5 + (matches * 0.1))
-
-    # Category confidence
-    category_confidence = 0.3
-    if category != "other":
-        matches = 0
-        for keyword in CATEGORY_KEYWORDS.get(category, []):
-            if keyword in text_lower:
-                matches += 1
-        category_confidence = min(0.95, 0.4 + (matches * 0.15))
-
-    return {
-        "priority": round(priority_confidence, 2),
-        "category": round(category_confidence, 2)
-    }
 
 
 if __name__ == "__main__":

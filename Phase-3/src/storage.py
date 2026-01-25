@@ -3,12 +3,47 @@ In-memory storage module for Todo App.
 Handles all data storage and retrieval operations.
 """
 
+import json
+import os
 from datetime import datetime
 from typing import List, Dict, Optional
+
+# File path for persistent storage
+STORAGE_FILE = os.path.join(os.path.dirname(__file__), "tasks.json")
 
 # Module-level variables for in-memory state management
 _tasks: List[Dict] = []
 _next_task_id: int = 1
+
+def load_data():
+    """Load tasks from JSON file."""
+    global _tasks, _next_task_id
+    if os.path.exists(STORAGE_FILE):
+        try:
+            with open(STORAGE_FILE, 'r') as f:
+                data = json.load(f)
+                _tasks = data.get("tasks", [])
+                _next_task_id = data.get("next_id", 1)
+        except (json.JSONDecodeError, IOError):
+            _tasks = []
+            _next_task_id = 1
+    else:
+        _tasks = []
+        _next_task_id = 1
+
+def save_data():
+    """Save tasks to JSON file."""
+    try:
+        with open(STORAGE_FILE, 'w') as f:
+            json.dump({
+                "tasks": _tasks,
+                "next_id": _next_task_id
+            }, f, indent=4)
+    except IOError:
+        pass
+
+# Initialize data on import
+load_data()
 
 # Phase 3: Additional storage
 _undo_stack: List[Dict] = []        # Stores last action for undo
@@ -76,6 +111,7 @@ def add_task(description: str, priority: str = "medium", category: str = "other"
         return False
     task = create_task(description.strip(), priority, category)
     _tasks.append(task)
+    save_data()
 
     # Phase 3.5: Save undo state
     save_undo_state("add", {
@@ -127,6 +163,7 @@ def mark_task_complete(task_id: int, force: bool = False) -> bool:
 
     task["completed"] = True
     task["completed_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    save_data()
 
     # Phase 3.4: Create recurring instance if applicable
     if task.get("recurring"):
@@ -164,6 +201,7 @@ def delete_task(task_id: int) -> bool:
         _tasks.remove(subtask)
 
     _tasks.remove(task)
+    save_data()
     return True
 
 
@@ -189,6 +227,7 @@ def edit_task(task_id: int, description: Optional[str] = None,
     if category is not None:
         task["category"] = category
 
+    save_data()
     return True
 
 

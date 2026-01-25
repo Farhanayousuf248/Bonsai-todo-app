@@ -1,0 +1,65 @@
+{
+    "tasks": [
+        {
+            "id": 13,
+            "description": "Study Python for the exam tomorrow",
+            "completed": false,
+            "created_at": "2026-01-24 15:59:28",
+            "priority": "medium",
+            "category": "other",
+            "due_date": null,
+            "notes": "",
+            "parent_id": null,
+            "depends_on": [],
+            "recurring": null,
+            "archived": false,
+            "completed_at": null
+        },
+        {
+            "id": 14,
+            "description": "Buy milk and groceries from the store",
+            "completed": false,
+            "created_at": "2026-01-24 16:00:21",
+            "priority": "medium",
+            "category": "other",
+            "due_date": null,
+            "notes": "",
+            "parent_id": null,
+            "depends_on": [],
+            "recurring": null,
+            "archived": false,
+            "completed_at": null
+        },
+        {
+            "id": 16,
+            "description": "Fix the server bug URGENTLY",
+            "completed": false,
+            "created_at": "2026-01-24 16:04:14",
+            "priority": "medium",
+            "category": "other",
+            "due_date": null,
+            "notes": "",
+            "parent_id": null,
+            "depends_on": [],
+            "recurring": null,
+            "archived": false,
+            "completed_at": null
+        },
+        {
+            "id": 19,
+            "description": "Add urgently fix bug",
+            "completed": false,
+            "created_at": "2026-01-25 12:58:09",
+            "priority": "high",
+            "category": "other",
+            "due_date": null,
+            "notes": "",
+            "parent_id": null,
+            "depends_on": [],
+            "recurring": null,
+            "archived": false,
+            "completed_at": null
+        }
+    ],
+    "next_id": 20
+}

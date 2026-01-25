@@ -1,5 +1,4 @@
 # syntax=docker/dockerfile:1.6
-
 ###############################
 # Stage 1: Dependency Builder #
 ###############################
