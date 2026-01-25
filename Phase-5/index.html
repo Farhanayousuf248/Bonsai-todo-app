@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo App - Phase 5 (AI Smart-Input)</title>
-    <style>
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Bonsai AI Todo App - Hackathon 2&lt;/title&gt;
+    &lt;style&gt;
         * {
             margin: 0;
             padding: 0;
@@ -13,336 +13,253 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #000000;
+            color: #D4AF37;
             min-height: 100vh;
-            padding: 20px;
+            overflow: hidden;
         }
 
         .container {
-            max-width: 950px;
-            margin: 0 auto;
+            display: flex;
+            height: 100vh;
         }
 
-        header {
+        .main-sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
+            border-right: 1px solid #D4AF37;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #000000;
+        }
+
+        .chat-header {
+            padding: 20px 30px;
+            background: linear-gradient(to right, #111111 0%, #000000 100%);
+            border-bottom: 1px solid #D4AF37;
             text-align: center;
-            color: white;
-            margin-bottom: 30px;
         }
 
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        .chat-header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
         }
 
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .ai-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-top: 8px;
-        }
-
-        .ai-badge .sparkle {
+        .chat-header p {
+            opacity: 0.8;
             font-size: 1rem;
         }
 
+        #chatMessages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chat-bubble {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 25px;
+            word-wrap: break-word;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .user-bubble {
+            align-self: flex-end;
+            border: 2px solid #D4AF37;
+            color: #D4AF37;
+            background: rgba(212,175,55,0.1);
+        }
+
+        .bot-bubble {
+            align-self: flex-start;
+            border: 2px solid #B8860B;
+            color: #D4AF37;
+            background: #111111;
+        }
+
+        .typing {
+            align-self: flex-start;
+            padding: 15px 20px;
+            color: #D4AF37;
+            opacity: 0.8;
+        }
+
+        .typing-dots::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 4px;
+            background: linear-gradient(to right, transparent, #D4AF37, transparent);
+            animation: typingDots 1.5s infinite;
+        }
+
+        @keyframes typingDots {
+            0%, 60%, 100% { transform: scaleX(0.4); }
+            30% { transform: scaleX(1); }
+        }
+
+        .input-row {
+            display: flex;
+            padding: 25px 30px;
+            gap: 15px;
+            background: #000000;
+            border-top: 1px solid #D4AF37;
+        }
+
+        #chatInput {
+            flex: 1;
+            padding: 15px 25px;
+            border: 2px solid #D4AF37;
+            border-radius: 30px;
+            background: #111111;
+            color: #D4AF37;
+            font-size: 1rem;
+        }
+
+        #chatInput::placeholder {
+            color: rgba(212,175,55,0.6);
+        }
+
+        #chatInput:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(212,175,55,0.5);
+        }
+
+        .send-btn {
+            padding: 15px 30px;
+            border: 2px solid #D4AF37;
+            background: transparent;
+            color: #D4AF37;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover {
+            background: #D4AF37;
+            color: #000000;
+        }
+
+        /* Sidebar styles */
         .stats-bar {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-bottom: 25px;
         }
 
         .stat-card {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: rgba(212,175,55,0.1);
+            border: 1px solid rgba(212,175,55,0.3);
             border-radius: 12px;
             padding: 15px;
             text-align: center;
-            color: white;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border-color: #D4AF37;
+            box-shadow: 0 5px 15px rgba(212,175,55,0.2);
         }
 
         .stat-number {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
         }
 
         .stat-label {
             font-size: 0.85rem;
-            opacity: 0.9;
+            opacity: 0.8;
             margin-top: 5px;
-        }
-
-        .main-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
-
-        .card-header {
-            background: #f8f9fa;
-            padding: 20px 25px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .card-header h2 {
-            color: #333;
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-        }
-
-        .input-section {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .main-input-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        #taskInput {
-            padding: 14px 20px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 1rem;
-            flex: 1;
-            min-width: 200px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        #taskInput:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .ai-suggestion-panel {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
-            border-radius: 10px;
-            padding: 15px 20px;
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
-
-        .ai-suggestion-panel.active {
-            display: block;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .ai-suggestion-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            color: #0072ff;
-            font-weight: 600;
-        }
-
-        .ai-suggestion-header .icon {
-            font-size: 1.2rem;
-        }
-
-        .ai-fields {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .ai-field {
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .ai-field label {
-            display: block;
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 6px;
-        }
-
-        .ai-field select {
-            width: 100%;
-            padding: 10px 14px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            background: white;
-            cursor: pointer;
-            transition: border-color 0.3s ease;
-        }
-
-        .ai-field select:focus {
-            outline: none;
-            border-color: #0072ff;
-        }
-
-        .confidence-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            margin-left: 8px;
-            font-weight: 500;
-        }
-
-        .confidence-high {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .confidence-medium {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .confidence-low {
-            background: #f8d7da;
-            color: #721c24;
         }
 
         .filters {
             display: flex;
             gap: 8px;
-            padding: 15px 25px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+            padding: 15px 0;
             flex-wrap: wrap;
-            align-items: center;
         }
 
         .filter-btn {
             padding: 8px 16px;
-            border: 2px solid #e9ecef;
+            border: 1px solid rgba(212,175,55,0.5);
+            background: transparent;
+            color: #D4AF37;
             border-radius: 20px;
-            background: white;
             cursor: pointer;
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
 
         .filter-btn:hover, .filter-btn.active {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
-        }
-
-        .undo-btn {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            border: none;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .undo-btn:hover {
-            box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
-        }
-
-        .undo-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            box-shadow: none;
+            border-color: #D4AF37;
+            background: rgba(212,175,55,0.2);
         }
 
         .refresh-btn {
             margin-left: auto;
-            padding: 8px 16px;
-            background: #6c757d;
-            color: white;
-            border: none;
+            background: transparent;
+            border-color: rgba(212,175,55,0.5);
+            color: #D4AF37;
+            padding: 8px 12px;
             border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         .refresh-btn:hover {
-            background: #5a6268;
+            background: rgba(212,175,55,0.2);
+        }
+
+        #taskSidebar {
+            flex: 1;
+            overflow-y: auto;
         }
 
         .task-list {
-            padding: 0;
-            max-height: 500px;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
         .task-item {
             display: flex;
             align-items: center;
-            padding: 18px 25px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background-color 0.2s ease;
+            padding: 15px;
+            background: rgba(212,175,55,0.05);
+            border: 1px solid rgba(212,175,55,0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
         }
 
         .task-item:hover {
-            background-color: #f8f9fa;
+            background: rgba(212,175,55,0.15);
+            border-color: #D4AF37;
         }
 
         .task-item.completed .task-text {
             text-decoration: line-through;
-            color: #999;
+            opacity: 0.7;
         }
 
         .task-checkbox {
-            width: 24px;
-            height: 24px;
-            border: 2px solid #ddd;
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(212,175,55,0.6);
             border-radius: 50%;
-            margin-right: 15px;
+            margin-right: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -352,17 +269,17 @@
         }
 
         .task-checkbox:hover {
-            border-color: #667eea;
+            border-color: #D4AF37;
         }
 
         .task-checkbox.checked {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: #667eea;
+            background: #D4AF37;
+            border-color: #D4AF37;
+            color: #000000;
         }
 
         .task-checkbox.checked::after {
             content: '✓';
-            color: white;
             font-size: 14px;
             font-weight: bold;
         }
@@ -373,70 +290,52 @@
         }
 
         .task-text {
-            font-size: 1.05rem;
-            color: #333;
+            font-size: 1rem;
             margin-bottom: 4px;
             word-break: break-word;
         }
 
         .task-meta {
             display: flex;
-            gap: 12px;
-            font-size: 0.8rem;
-            color: #888;
+            gap: 8px;
+            font-size: 0.75rem;
+            opacity: 0.8;
             flex-wrap: wrap;
         }
 
-        .task-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
         .priority-badge {
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
             font-weight: 500;
         }
 
         .priority-high {
             background-color: red !important;
-            color: white !important;
+            color: #D4AF37 !important;
         }
 
         .priority-medium {
-            background: #fff3e0;
-            color: #ef6c00;
+            background: rgba(255,165,0,0.3);
+            color: #D4AF37;
         }
 
         .priority-low {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: rgba(0,128,0,0.3);
+            color: #D4AF37;
         }
 
         .category-badge {
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-
-        .ai-detected {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 0.7rem;
-            color: #0072ff;
-            margin-left: 5px;
+            background: rgba(30,144,255,0.3);
+            color: #D4AF37;
         }
 
         .task-actions {
             display: flex;
-            gap: 8px;
+            gap: 5px;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s;
         }
 
         .task-item:hover .task-actions {
@@ -444,44 +343,73 @@
         }
 
         .action-btn {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             font-size: 1rem;
+            background: rgba(212,175,55,0.2);
+            color: #D4AF37;
         }
 
-        .action-btn.delete {
-            background-color: red !important;
-            color: #c62828;
-        }
-
-        .action-btn.delete:hover {
-            background: #c62828;
+        .action-btn:hover {
+            background: red;
             color: white;
         }
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #888;
+            padding: 40px 20px;
+            opacity: 0.6;
         }
 
         .empty-state .icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
+            font-size: 3rem;
+            margin-bottom: 15px;
             opacity: 0.5;
         }
 
-        .empty-state h3 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-            color: #666;
+        /* Connection & Toast */
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 16px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            border: 1px solid #D4AF37;
+        }
+
+        .connection-status.connected {
+            background: rgba(0,255,0,0.2);
+            color: #D4AF37;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(255,0,0,0.2);
+            color: #D4AF37;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #D4AF37;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .toast {
@@ -489,10 +417,9 @@
             bottom: 30px;
             right: 30px;
             padding: 15px 25px;
-            border-radius: 10px;
-            color: white;
+            border-radius: 12px;
             font-weight: 500;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
             transform: translateX(120%);
             transition: transform 0.4s ease;
             z-index: 1000;
@@ -503,15 +430,13 @@
         }
 
         .toast.success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #D4AF37, #B8860B);
+            color: #000000;
         }
 
         .toast.error {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-        }
-
-        .toast.ai {
-            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+            background: linear-gradient(135deg, red, #ff4444);
+            color: white;
         }
 
         .loading {
@@ -524,8 +449,8 @@
         .spinner {
             width: 40px;
             height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 4px solid rgba(212,175,55,0.3);
+            border-top: 4px solid #D4AF37;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -535,188 +460,90 @@
             100% { transform: rotate(360deg); }
         }
 
-        .connection-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 100;
-        }
-
-        .connection-status.connected {
-            background: rgba(40, 167, 69, 0.9);
-            color: white;
-        }
-
-        .connection-status.disconnected {
-            background: rgba(220, 53, 69, 0.9);
-            color: white;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: white;
-        }
-
-        .status-dot.pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 1.8rem;
-            }
-
-            .card-header {
-                padding: 15px;
-            }
-
-            .task-item {
-                padding: 15px;
-            }
-
-            .task-actions {
-                opacity: 1;
-            }
-
-            .toast {
-                left: 20px;
-                right: 20px;
-                bottom: 20px;
-            }
-
-            .ai-fields {
+        @media (max-width: 768px) {
+            .container {
                 flex-direction: column;
             }
+
+            .main-sidebar {
+                width: 100%;
+                height: 40vh;
+                max-height: 40vh;
+            }
+
+            #chatMessages {
+                height: 60vh;
+            }
         }
-        .priority-high {
-            background: red !important;
-            color: white !important;
-            padding: 5px;
-            border-radius: 4px;
-        }
-    </style>
-</head>
-<body>
-    <div class="connection-status disconnected" id="connectionStatus">
-        <span class="status-dot"></span>
-        <span id="statusText">Connecting...</span>
-    </div>
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="connection-status disconnected" id="connectionStatus"&gt;
+        &lt;span class="status-dot"&gt;&lt;/span&gt;
+        &lt;span id="statusText"&gt;Connecting...&lt;/span&gt;
+    &lt;/div&gt;
 
-    <div class="container">
-        <header>
-            <h1>Todo App</h1>
-            <p>Phase 5 - AI Smart-Input</p>
-            <div class="ai-badge">
-                <span class="sparkle">✨</span>
-                <span>AI Powered</span>
-            </div>
-        </header>
+    &lt;div class="container"&gt;
+        &lt;div class="main-sidebar"&gt;
+            &lt;div class="stats-bar" id="statsBar"&gt;
+                &lt;div class="stat-card"&gt;
+                    &lt;div class="stat-number" id="totalTasks"&gt;0&lt;/div&gt;
+                    &lt;div class="stat-label"&gt;Total&lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class="stat-card"&gt;
+                    &lt;div class="stat-number" id="pendingTasks"&gt;0&lt;/div&gt;
+                    &lt;div class="stat-label"&gt;Pending&lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class="stat-card"&gt;
+                    &lt;div class="stat-number" id="completedTasks"&gt;0&lt;/div&gt;
+                    &lt;div class="stat-label"&gt;Completed&lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class="stat-card"&gt;
+                    &lt;div class="stat-number" id="completionRate"&gt;0%&lt;/div&gt;
+                    &lt;div class="stat-label"&gt;Rate&lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="filters"&gt;
+                &lt;button class="filter-btn active" data-filter="all" onclick="setFilter('all')"&gt;All&lt;/button&gt;
+                &lt;button class="filter-btn" data-filter="pending" onclick="setFilter('pending')"&gt;Pending&lt;/button&gt;
+                &lt;button class="filter-btn" data-filter="completed" onclick="setFilter('completed')"&gt;Completed&lt;/button&gt;
+                &lt;button class="filter-btn" data-filter="high" onclick="setFilter('high')"&gt;High&lt;/button&gt;
+                &lt;button class="filter-btn refresh-btn" onclick="loadTasks()"&gt;↻&lt;/button&gt;
+            &lt;/div&gt;
+            &lt;div id="taskSidebar" class="task-list"&gt;
+                &lt;div class="loading"&gt;
+                    &lt;div class="spinner"&gt;&lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="main-chat"&gt;
+            &lt;div class="chat-header"&gt;
+                &lt;h1&gt;✨ Bonsai AI&lt;/h1&gt;
+                &lt;p&gt;Your conversational task manager&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div id="chatMessages"&gt;
+                &lt;div class="chat-bubble bot-bubble"&gt;
+                    Hello! Chat with me to add tasks like "Add buy milk" or just say hi. I'm here to help! ✨
+                &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="input-row"&gt;
+                &lt;input type="text" id="chatInput" placeholder="Type your message... (e.g. 'Add fix the bug urgently')&quot; autocomplete="off"&gt;
+                &lt;button class="send-btn" onclick="sendChat()"&gt;Send&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
 
-        <div class="stats-bar" id="statsBar">
-            <div class="stat-card">
-                <div class="stat-number" id="totalTasks">0</div>
-                <div class="stat-label">Total Tasks</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="pendingTasks">0</div>
-                <div class="stat-label">Pending</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="completedTasks">0</div>
-                <div class="stat-label">Completed</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="completionRate">0%</div>
-                <div class="stat-label">Completion Rate</div>
-            </div>
-        </div>
+    &lt;div class="toast" id="toast"&gt;&lt;/div&gt;
 
-        <div class="main-card">
-            <div class="card-header">
-                <h2>Add New Task</h2>
-                <div class="input-section">
-                    <div class="main-input-row">
-                        <input type="text" id="taskInput" placeholder="Enter a task (AI will auto-detect priority & category)..." autocomplete="off">
-                        <button class="btn btn-primary" id="addTaskBtn" onclick="addTask()">Add Task</button>
-                    </div>
-
-                    <div class="ai-suggestion-panel" id="aiPanel">
-                        <div class="ai-suggestion-header">
-                            <span class="icon">✨</span>
-                            <span>AI Smart-Input Suggestions</span>
-                        </div>
-                        <div class="ai-fields">
-                            <div class="ai-field">
-                                <label>
-                                    Priority
-                                    <span id="priorityConfidence" class="confidence-badge"></span>
-                                </label>
-                                <select id="prioritySelect">
-                                    <option value="high">High</option>
-                                    <option value="medium" selected>Medium</option>
-                                    <option value="low">Low</option>
-                                </select>
-                            </div>
-                            <div class="ai-field">
-                                <label>
-                                    Category
-                                    <span id="categoryConfidence" class="confidence-badge"></span>
-                                </label>
-                                <select id="categorySelect">
-                                    <option value="work">Work</option>
-                                    <option value="personal">Personal</option>
-                                    <option value="shopping">Shopping</option>
-                                    <option value="other" selected>Other</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filters">
-                <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
-                <button class="filter-btn" data-filter="pending" onclick="setFilter('pending')">Pending</button>
-                <button class="filter-btn" data-filter="completed" onclick="setFilter('completed')">Completed</button>
-                <button class="filter-btn" data-filter="high" onclick="setFilter('high')">High Priority</button>
-                <button class="filter-btn undo-btn" onclick="undoLastAction()">↶ Undo</button>
-                <button class="refresh-btn" onclick="loadTasks()">↻ Refresh</button>
-            </div>
-
-            <div class="task-list" id="taskList">
-                <div class="loading">
-                    <div class="spinner"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <script>
+    &lt;script&gt;
         const API_BASE = '/api/v1';
+        let sidebarTasks = [];
         let currentFilter = 'all';
-        let tasks = [];
-        let aiAnalysisTimeout = null;
 
-        // Check connection status
+        // Check connection
         async function checkConnection() {
             const statusEl = document.getElementById('connectionStatus');
             const statusText = document.getElementById('statusText');
-
             try {
                 const response = await fetch('/health');
                 if (response.ok) {
@@ -724,274 +551,116 @@
                     statusText.textContent = 'Connected';
                     return true;
                 }
-            } catch (e) {
-                console.log('Connection check failed:', e.message);
-            }
-
+            } catch (e) {}
             statusEl.className = 'connection-status disconnected';
             statusText.textContent = 'Disconnected';
             return false;
         }
 
-        // Show toast notification
+        // Toast
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.className = `toast ${type} show`;
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() =&gt; toast.classList.remove('show'), 4000);
         }
 
-        // AI Analysis - called as user types
-        async function analyzeTask(description) {
-            if (!description.trim()) {
-                hideAIPanel();
-                return;
-            }
-
-            // Debounce: wait 500ms after user stops typing
-            clearTimeout(aiAnalysisTimeout);
-            aiAnalysisTimeout = setTimeout(async () => {
-                try {
-                    const response = await fetch(`${API_BASE}/tasks/analyze`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(description)
-                    });
-
-                    if (response.ok) {
-                        const analysis = await response.json();
-                        showAIPanel(analysis);
-                        showToast('AI analyzed your task', 'ai');
-                    }
-                } catch (error) {
-                    console.error('AI analysis error:', error);
-                }
-            }, 500);
-        }
-
-        // Show AI suggestion panel
-        function showAIPanel(analysis) {
-            const panel = document.getElementById('aiPanel');
-            const prioritySelect = document.getElementById('prioritySelect');
-            const categorySelect = document.getElementById('categorySelect');
-            const priorityConfidence = document.getElementById('priorityConfidence');
-            const categoryConfidence = document.getElementById('categoryConfidence');
-
-            // Update dropdowns with AI suggestions
-            prioritySelect.value = analysis.detected_priority;
-            categorySelect.value = analysis.detected_category;
-
-            // Update confidence badges
-            const priorityConfClass = analysis.priority_confidence >= 0.7 ? 'confidence-high' :
-                                     analysis.priority_confidence >= 0.4 ? 'confidence-medium' : 'confidence-low';
-            priorityConfidence.className = `confidence-badge ${priorityConfClass}`;
-            priorityConfidence.textContent = `${Math.round(analysis.priority_confidence * 100)}% confidence`;
-
-            const categoryConfClass = analysis.category_confidence >= 0.7 ? 'confidence-high' :
-                                     analysis.category_confidence >= 0.4 ? 'confidence-medium' : 'confidence-low';
-            categoryConfidence.className = `confidence-badge ${categoryConfClass}`;
-            categoryConfidence.textContent = `${Math.round(analysis.category_confidence * 100)}% confidence`;
-
-            // Show panel
-            panel.classList.add('active');
-        }
-
-        // Hide AI suggestion panel
-        function hideAIPanel() {
-            document.getElementById('aiPanel').classList.remove('active');
-        }
-
-        // Load all tasks
+        // Load tasks for sidebar
         async function loadTasks() {
-            const taskList = document.getElementById('taskList');
-            taskList.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
+            const taskSidebar = document.getElementById('taskSidebar');
+            taskSidebar.innerHTML = '&lt;div class="loading"&gt;&lt;div class="spinner"&gt;&lt;/div&gt;&lt;/div&gt;';
             try {
                 const response = await fetch(`${API_BASE}/tasks`);
-                if (!response.ok) throw new Error('Failed to load tasks');
-
-                tasks = await response.json();
-                renderTasks();
+                if (!response.ok) throw new Error('Failed to load');
+                sidebarTasks = await response.json();
+                renderSidebar();
                 updateStats();
             } catch (error) {
-                console.error('Error loading tasks:', error);
-                taskList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">⚠️</div>
-                        <h3>Unable to load tasks</h3>
-                        <p>Make sure the API server is running</p>
-                    </div>
+                taskSidebar.innerHTML = `
+                    &lt;div class="empty-state"&gt;
+                        &lt;div class="icon"&gt;⚠️&lt;/div&gt;
+                        &lt;h3&gt;No tasks&lt;/h3&gt;
+                        &lt;p&gt;Add tasks via chat&lt;/p&gt;
+                    &lt;/div&gt;
                 `;
             }
         }
 
-        // Render tasks based on current filter
-        function renderTasks() {
-            const taskList = document.getElementById('taskList');
-            let filteredTasks = [...tasks];
-
-            if (currentFilter === 'pending') {
-                filteredTasks = tasks.filter(t => !t.completed && !t.archived);
-            } else if (currentFilter === 'completed') {
-                filteredTasks = tasks.filter(t => t.completed && !t.archived);
-            } else if (currentFilter === 'high') {
-                filteredTasks = tasks.filter(t => t.priority === 'high' && !t.archived);
-            } else {
-                filteredTasks = tasks.filter(t => !t.archived);
-            }
+        // Render sidebar tasks
+        function renderSidebar() {
+            const taskSidebar = document.getElementById('taskSidebar');
+            let filteredTasks = sidebarTasks.filter(t =&gt; !t.archived || t.archived === false);
+            if (currentFilter === 'pending') filteredTasks = filteredTasks.filter(t =&gt; !t.completed);
+            else if (currentFilter === 'completed') filteredTasks = filteredTasks.filter(t =&gt; t.completed);
+            else if (currentFilter === 'high') filteredTasks = filteredTasks.filter(t =&gt; t.priority === 'high');
 
             if (filteredTasks.length === 0) {
-                taskList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📝</div>
-                        <h3>No tasks found</h3>
-                        <p>Add your first task above to get started!</p>
-                    </div>
+                taskSidebar.innerHTML = `
+                    &lt;div class="empty-state"&gt;
+                        &lt;div class="icon"&gt;📝&lt;/div&gt;
+                        &lt;h3&gt;No matching tasks&lt;/h3&gt;
+                        &lt;p&gt;Chat to add tasks!&lt;/p&gt;
+                    &lt;/div&gt;
                 `;
                 return;
             }
 
-            taskList.innerHTML = filteredTasks.map(task => `
-                <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
-                    <div class="task-content">
-                        <div class="task-text">${escapeHtml(task.description)}</div>
-                        <div class="task-meta">
-                            <span class="priority-badge priority-${task.priority}">${task.priority}</span>
-                            <span class="category-badge">${task.category}</span>
-                            <span>${formatDate(task.created_at)}</span>
-                        </div>
-                    </div>
-                    <div class="task-actions">
-                        <button class="action-btn delete" onclick="deleteTask(${task.id})" title="Delete">🗑</button>
-                    </div>
-                </div>
+            taskSidebar.innerHTML = filteredTasks.map(task =&gt; `
+                &lt;div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}"&gt;
+                    &lt;div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"&gt;&lt;/div&gt;
+                    &lt;div class="task-content"&gt;
+                        &lt;div class="task-text"&gt;${escapeHtml(task.description)}&lt;/div&gt;
+                        &lt;div class="task-meta"&gt;
+                            &lt;span class="priority-badge priority-${task.priority}"&gt;${task.priority}&lt;/span&gt;
+                            &lt;span class="category-badge"&gt;${task.category}&lt;/span&gt;
+                            &lt;span&gt;${formatDate(task.created_at)}&lt;/span&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;div class="task-actions"&gt;
+                        &lt;button class="action-btn" onclick="deleteTask(${task.id})" title="Delete"&gt;🗑&lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
             `).join('');
         }
 
-        // Update statistics
+        // Update stats
         async function updateStats() {
             try {
                 const response = await fetch(`${API_BASE}/stats`);
-                if (!response.ok) throw new Error('Failed to load stats');
-
                 const stats = await response.json();
                 document.getElementById('totalTasks').textContent = stats.active;
                 document.getElementById('pendingTasks').textContent = stats.pending;
                 document.getElementById('completedTasks').textContent = stats.completed;
                 document.getElementById('completionRate').textContent = `${stats.completion_rate}%`;
             } catch (error) {
-                console.error('Error loading stats:', error);
+                // silent fail
             }
         }
 
-        // Add a new task
-        async function addTask() {
-            const input = document.getElementById('taskInput');
-            const description = input.value.trim();
-
-            if (!description) {
-                showToast('Please enter a task description', 'error');
-                return;
-            }
-
-            // Get selected priority/category (from AI suggestions or dropdowns)
-            const priority = document.getElementById('prioritySelect').value;
-            const category = document.getElementById('categorySelect').value;
-
-            try {
-                const response = await fetch(`${API_BASE}/tasks`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        description: description,
-                        priority: priority,
-                        category: category
-                    })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Failed to add task');
-                }
-
-                input.value = '';
-                hideAIPanel();
-                showToast('Task added successfully!');
-                await loadTasks();
-            } catch (error) {
-                console.error('Error adding task:', error);
-                showToast(error.message, 'error');
-            }
-        }
-
-        // Toggle task completion
+        // Toggle task
         async function toggleTask(taskId) {
-            const task = tasks.find(t => t.id === taskId);
+            const task = sidebarTasks.find(t =&gt; t.id === taskId);
             if (!task) return;
-
             try {
-                if (task.completed) {
-                    const response = await fetch(`${API_BASE}/tasks/${taskId}/uncomplete`, {
-                        method: 'POST'
-                    });
-                    if (!response.ok) throw new Error('Failed to uncomplete task');
-                } else {
-                    const response = await fetch(`${API_BASE}/tasks/${taskId}/complete`, {
-                        method: 'POST'
-                    });
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.detail || 'Failed to complete task');
-                    }
-                }
-
+                const endpoint = task.completed ? 'uncomplete' : 'complete';
+                const response = await fetch(`${API_BASE}/tasks/${taskId}/${endpoint}`, {method: 'POST'});
+                if (!response.ok) throw new Error('Toggle failed');
                 await loadTasks();
-                showToast(task.completed ? 'Task marked as pending' : 'Task completed!');
+                showToast(task.completed ? 'Uncompleted' : 'Completed!');
             } catch (error) {
-                console.error('Error toggling task:', error);
                 showToast(error.message, 'error');
             }
         }
 
-        // Delete a task
+        // Delete task
         async function deleteTask(taskId) {
-            if (!confirm('Are you sure you want to delete this task?')) return;
-
+            if (!confirm('Delete task?')) return;
             try {
-                const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) throw new Error('Failed to delete task');
-
-                showToast('Task deleted');
+                const response = await fetch(`${API_BASE}/tasks/${taskId}`, {method: 'DELETE'});
+                if (!response.ok) throw new Error('Delete failed');
                 await loadTasks();
+                showToast('Deleted');
             } catch (error) {
-                console.error('Error deleting task:', error);
-                showToast(error.message, 'error');
-            }
-        }
-
-        // Undo last action
-        async function undoLastAction() {
-            try {
-                const response = await fetch(`${API_BASE}/undo`, {
-                    method: 'POST'
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Nothing to undo');
-                }
-
-                const result = await response.json();
-                showToast(result.message);
-                await loadTasks();
-            } catch (error) {
-                console.error('Error undoing:', error);
                 showToast(error.message, 'error');
             }
         }
@@ -999,14 +668,73 @@
         // Set filter
         function setFilter(filter) {
             currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.classList.contains('undo-btn')) return;
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(btn =&gt; {
                 btn.classList.toggle('active', btn.dataset.filter === filter);
             });
-            renderTasks();
+            renderSidebar();
         }
 
-        // Utility functions
+        // Chat functions
+        function appendUserBubble(msg) {
+            const messages = document.getElementById('chatMessages');
+            messages.innerHTML += `&lt;div class="chat-bubble user-bubble"&gt;${escapeHtml(msg)}&lt;/div&gt;`;
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function appendBotBubble(reply) {
+            const messages = document.getElementById('chatMessages');
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble bot-bubble';
+            bubble.textContent = reply;
+            messages.appendChild(bubble);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        let typingIndicator = null;
+        function showTyping() {
+            const messages = document.getElementById('chatMessages');
+            typingIndicator = document.createElement('div');
+            typingIndicator.id = 'typingIndicator';
+            typingIndicator.className = 'typing typing-dots';
+            messages.appendChild(typingIndicator);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function hideTyping() {
+            if (typingIndicator) {
+                typingIndicator.remove();
+                typingIndicator = null;
+            }
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            input.value = '';
+            appendUserBubble(msg);
+            showTyping();
+            try {
+                const response = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: msg})
+                });
+                if (!response.ok) throw new Error('Chat failed');
+                const data = await response.json();
+                hideTyping();
+                appendBotBubble(data.reply);
+                if (data.task_added) {
+                    showToast(`Added: ${data.task_added.description}`, 'success');
+                    await loadTasks();
+                }
+            } catch (error) {
+                hideTyping();
+                showToast('Connection error. Check server.', 'error');
+            }
+        }
+
+        // Utilities
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
@@ -1015,33 +743,21 @@
 
         function formatDate(dateStr) {
             const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric', hour: 'numeric'});
         }
 
-        // Event listeners
-        document.getElementById('taskInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTask();
+        // Events
+        document.getElementById('chatInput').addEventListener('keypress', (e) =&gt; {
+            if (e.key === 'Enter') sendChat();
         });
 
-        document.getElementById('taskInput').addEventListener('input', (e) => {
-            analyzeTask(e.target.value);
-        });
-
-        // Initialize
+        // Init
         async function init() {
             await checkConnection();
             await loadTasks();
-
-            // Check connection every 5 seconds
             setInterval(checkConnection, 5000);
         }
-
         init();
-    </script>
-</body>
-</html>
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;

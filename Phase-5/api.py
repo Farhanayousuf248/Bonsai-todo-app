@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Phase-3'))
 
 from src import storage
 from ai_analyzer import analyze_task_text, extract_clean_description
+import random
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -174,6 +175,37 @@ async def create_task(task: TaskCreate):
     # Return the newly created task
     all_tasks = storage.get_all_tasks()
     return all_tasks[-1]
+
+class ChatRequest(BaseModel):
+    message: str
+
+class ChatResponse(BaseModel):
+    reply: str
+    task_added: Optional[TaskResponse] = None
+
+@app.post('/api/v1/chat', response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    msg_lower = request.message.lower()
+
+    # Simple intent: task add
+    if any(word in msg_lower for word in ['add', 'create', 'todo', 'task', 'do', 'fix', 'buy']):
+        # Extract desc (whole msg after keywords)
+        desc = request.message.strip()
+        analysis = analyze_task_text(desc)
+        prio, cat = analysis['priority'], analysis['category']
+        cleaned = extract_clean_description(desc)
+
+        success = storage.add_task(cleaned, prio, cat)
+        if success:
+            new_task = storage.get_all_tasks()[-1]
+            reply = f"I've added '{new_task['description']}' for you! ({new_task['priority']} priority, {new_task['category']} category)."
+            return {'reply': reply, 'task_added': new_task}
+        else:
+            return {'reply': "Sorry, couldn't add that task."}
+
+    # Generic replies
+    replies = ['Got it!', 'Sure thing!', "I'll keep that in mind.", 'Okay!']
+    return {'reply': random.choice(replies)}
 
 
 # ============================================================================
